@@ -26,40 +26,56 @@ public class Main {
       System.out.print("> ");
       userInput = scanIn.nextLine();
 
-      if (userInput.compareTo("quit") == 0) {
+      switch (userInput) {
+      case "quit":
         quitApplication = true;
-      } else if (userInput.compareTo("clear") == 0) {
+        break;
+      case "clear":
         execService.execute(new ClearCommand(execService));
-      } else if (userInput.compareTo("status") == 0) {
+        break;
+      case "status":
         printStatus(execService, calculator);
-      } else if (userInput.compareTo("undo") == 0) {
-        if (execService.hasUndoableCommand()) {
-          execService.undo();
+        break;
+      case "undo":
+        undoLastAction(execService, calculator);
+        break;
+      case "redo":
+        redoLastAction(execService, calculator);
+        break;
+      default:
+        if (NumberUtils.isNumber(userInput)) {
+          double parsedInput = Double.parseDouble(userInput);
+
+          execService.execute(new AddNumberCommand(calculator, parsedInput));
+
           printCurrentValue(calculator);
         } else {
-          System.out.println("Undo stack is empty");
+          displayHelp();
         }
-      } else if (userInput.compareTo("redo") == 0) {
-        if (execService.hasRedoableCommand()) {
-          execService.redo();
-          printCurrentValue(calculator);
-        } else {
-          System.out.println("Redo stack is empty");
-        }
-      } else if (NumberUtils.isNumber(userInput)) {
-        double parsedInput = Double.parseDouble(userInput);
-
-        execService.execute(new AddNumberCommand(calculator, parsedInput));
-
-        printCurrentValue(calculator);
-      } else {
-        displayHelp();
       }
     }
 
     System.out.println("Exiting application...");
 
     scanIn.close();
+  }
+
+  private static void redoLastAction(ExecutionService execService, Calculator calculator) {
+    if (execService.hasRedoableCommand()) {
+      execService.redo();
+      printCurrentValue(calculator);
+    } else {
+      System.out.println("Redo stack is empty");
+    }
+  }
+
+  private static void undoLastAction(ExecutionService execService, Calculator calculator) {
+    if (execService.hasUndoableCommand()) {
+      execService.undo();
+      printCurrentValue(calculator);
+    } else {
+      System.out.println("Undo stack is empty");
+    }
   }
 
   private static void printStatus(ExecutionService execService, Calculator calculator) {
